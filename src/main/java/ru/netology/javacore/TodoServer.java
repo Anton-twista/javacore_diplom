@@ -1,5 +1,7 @@
 package ru.netology.javacore;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -10,6 +12,8 @@ import java.net.Socket;
 
 public class TodoServer {
 
+
+
     private final int port;
     private final Todos todos;
 
@@ -18,9 +22,9 @@ public class TodoServer {
         this.todos = todos;
     }
 
-    public void start() throws IOException {
+    public void start() {
         System.out.println("Starting server at " + port + "...");
-        JSONParser parser = new JSONParser();
+
         try (ServerSocket serverSocket = new ServerSocket(port);) {
             while (true) {
                 try (
@@ -28,10 +32,12 @@ public class TodoServer {
                         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                         PrintWriter out = new PrintWriter(socket.getOutputStream());
                 ) {
-                    Object obj = parser.parse(in.readLine());
-                    JSONObject jsonObject = (JSONObject) obj;
-                    String typeOperation = (String) jsonObject.get("type");
-                    String task = (String) jsonObject.get("task");
+                    String line = in.readLine();
+                    GsonBuilder builder = new GsonBuilder();
+                    Gson gson = builder.create();
+                    ServerRequest req = gson.fromJson(line, ServerRequest.class);
+                    String typeOperation =  req.getType();
+                    String task = req.getTask();
 
                     if (typeOperation.equals("ADD")) {
                         todos.addTask(task);
@@ -42,7 +48,7 @@ public class TodoServer {
                         todos.removeTask(task);
                         out.println("Задача: " + task + ", удалена из списка задач. Актуальные задачи: " + todos.getAllTasks() + "\n");
                     }
-                } catch (ParseException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

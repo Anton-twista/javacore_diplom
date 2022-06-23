@@ -5,14 +5,7 @@ import java.util.stream.Collectors;
 
 public class Todos {
 
-    public String type;
-    public String task;
-
-    private final List<String> todos;
-
-    public Todos() {
-        todos = new ArrayList<>();
-    }
+    private final List<String> todos = new ArrayList<>();
 
     public List<String> getTasksList() {
         return todos;
